@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Stock Prediction Dashboard</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			// Update the prediction every 5 seconds
+			setInterval(updatePrediction, 5000);
+		});
+
+		function updatePrediction() {
+			// Get the latest data instance
+			var instance = {
+				'Open': $('#open').text(),
+				'High': $('#high').text(),
+				'Low': $('#low').text(),
+				'Volume': $('#volume').text()
+			};
+			// Send a POST request to the prediction service to get the updated prediction
+			$.ajax({
+				type: 'POST',
+				url: '/predict',
+				data: JSON.stringify(instance),
+				contentType: 'application/json',
+				success: function(data) {
+					// Update the predicted value
+					$('#prediction').text(data['prediction'].toFixed(2));
+				},
+				error: function() {
+					console.log('Error while updating prediction.');
+				}
+			});
+		}
+	</script>
+</head>
+<body>
+	<h1>Stock Prediction Dashboard</h1>
+	<table>
+		<thead>
+			<tr>
+				<th>Ticker Symbol</th>
+				<th>Open Price</th>
+				<th>High Price</th>
+				<th>Low Price</th>
+				<th>Volume</th>
+				<th>Close Price</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in latest_df %}
+			<tr>
+				<td>{{ row['symbol'] }}</td>
+				<td>{{ row['Open'] }}</td>
+				<td>{{ row['High'] }}</td>
+				<td>{{ row['Low'] }}</td>
+				<td>{{ row['Volume'] }}</td>
+				<td>{{ row['Close'] }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<br>
+	<p>Latest Prediction: $<span id="prediction">{{ y_pred }}</span></p>
+	<p>Accuracy of the model: {{ accuracy|round(2) }}</p>
+	<br>
+	<p>Live Data Instance for Prediction:</p>
+	<ul>
+		<li>Open: $<span id="open">{{ latest_df[0]['Open'] }}</span></li>
+		<li>High: $<span id="high">{{ latest_df[0]['High'] }}</span></li>
+		<li>Low: $<span id="low">{{ latest_df[0]['Low'] }}</span></li>
+		<li>Volume: <span id="volume">{{ latest_df[0]['Volume'] }}</span></li>
+	</ul>
+</body>
+</html>
